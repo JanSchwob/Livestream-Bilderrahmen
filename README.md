@@ -33,6 +33,8 @@ Dann im Browser `http://localhost:8000` öffnen.
 
 Auf einem Tablet im selben WLAN geht auch `http://<IP-des-Macs>:8000`. Wake Lock und die Installation als App funktionieren aber nur über HTTPS, also erst nach dem Deployment.
 
+Mit `?debug=1` an der Adresse (z. B. `https://<benutzername>.github.io/fenster/?debug=1`) zeigen die Kacheln zusätzlich den Fehlergrund an, etwa „offline · Fehler 5“ oder „nicht verfügbar · Fehler 150“. Das hilft vor allem auf dem iPad, wo es keine Konsole gibt.
+
 Für die Fehlersuche gibt es in der Browser-Konsole das Objekt `fenster` (z. B. `fenster.current`, `fenster.status`, `fenster.player.getPlayerState()`).
 
 ## Deployment auf GitHub Pages
@@ -56,6 +58,7 @@ Für die Fehlersuche gibt es in der Browser-Konsole das Objekt `fenster` (z. B. 
 5. iPad in Querformat einsetzen und am Netzteil lassen. Unter **Einstellungen → Akku → Akkuzustand** „Optimiertes Laden“ eingeschaltet lassen.
 
 Einschränkungen auf dem iPad:
+- Im **Stromsparmodus** startet Safari keine Videos von selbst, auch nicht stumm. Die App zeigt dann „Tippen zum Starten“; ein Tap auf das Bild startet den Stream. Für den Dauerbetrieb den Stromsparmodus ausgeschaltet lassen.
 - iPadOS lässt die Lautstärke nicht per Webseite steuern. Der Lautstärkeregler ist deshalb ausgeblendet; die Lautstärke regelt man mit den Hardwaretasten.
 - Nach dem täglichen Reload um 04:00 Uhr läuft der Stream weiter, aber stumm, bis jemand einmal tippt (Vorgabe von Safari).
 

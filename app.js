@@ -21,6 +21,8 @@
   const params = new URLSearchParams(location.search);
   // Für Kiosk-Browser mit erlaubtem Autoplay: Ton ohne ersten Tap wiederherstellen.
   const AUTOSOUND = params.get('autosound') === '1';
+  // Zeigt auf den Kacheln den Fehlergrund (z. B. "Fehler 150").
+  const DEBUG = params.get('debug') === '1';
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -64,6 +66,7 @@
 
   let streams = [];
   const status = {};         // id -> 'offline' | 'unavailable'
+  const reasons = {};        // id -> letzter Fehlergrund, sichtbar mit ?debug=1
   let preferredId = store.get('streamId', null);
   let soundOn = store.get('soundOn', false) === true;
   let volume = clampVolume(store.get('volume', 80));
@@ -210,13 +213,13 @@
   function onPlayerStateChange(e) {
     const S = YT.PlayerState;
     if (e.data === S.PLAYING) onPlaying();
-    else if (e.data === S.ENDED) failCurrent('offline');
+    else if (e.data === S.ENDED) failCurrent('offline', 'beendet');
   }
 
   function onPlayerError(e) {
     const kind = ERRORS_UNAVAILABLE.includes(e.data) ? 'unavailable' : 'offline';
     console.warn('YouTube-Fehler', e.data, current && current.id);
-    failCurrent(kind);
+    failCurrent(kind, 'Fehler ' + e.data);
   }
 
   function onPlaying() {
@@ -224,7 +227,7 @@
     awaitingPlay = false;
     clearTimeout(loadTimer);
     setStatus(current.id, null);
-    setNotice('start', null);
+    setNeedsStart(false);
     lastTime = safeCurrentTime();
     hideCurtain(CURTAIN_HOLD);
     applySound();
@@ -279,18 +282,29 @@
       if (token !== loadToken || !awaitingPlay) return;
       if (!navigator.onLine) return; // das online-Event lädt neu
       const st = playerReady ? safeState() : -1;
-      if (st === YT.PlayerState.CUED || st === YT.PlayerState.PAUSED) {
-        // Autoplay wurde blockiert (z. B. Stromsparmodus) – der Stream selbst ist ok.
-        setNotice('start', 'Tippen zum Starten');
+      if (st === YT.PlayerState.BUFFERING) {
+        failCurrent('offline', 'Zeitüberschreitung');
         return;
       }
-      failCurrent('offline');
+      // Kein Fehler, aber nie gestartet: Der Browser blockiert Autoplay (z. B. iPad im
+      // Stromsparmodus). Der Stream ist in Ordnung – kein Failover, sondern Tap abwarten.
+      console.warn('Autoplay blockiert, Status', st, current && current.id);
+      setNeedsStart(true);
     }, LOAD_TIMEOUT);
   }
 
-  function failCurrent(kind) {
+  // Safari startet Videos im Stromsparmodus nur, wenn der Tap direkt im Player landet.
+  // Deshalb lassen wir in diesem Zustand Taps ausnahmsweise zum IFrame durch.
+  function setNeedsStart(on) {
+    document.body.classList.toggle('needs-start', on);
+    if (on) closeOverlay();
+    setNotice('start', on ? 'Tippen zum Starten' : null);
+  }
+
+  function failCurrent(kind, reason) {
     if (!current) return;
     clearTimeout(loadTimer);
+    reasons[current.id] = reason || '';
     // Hinweis: Der Kanal-Fallback über /embed/live_stream?channel=… funktioniert
     // derzeit nicht mehr (YouTube antwortet mit Fehler 150), siehe README.
     setStatus(current.id, kind);
@@ -595,8 +609,9 @@
       const state = status[stream.id];
       tile.classList.toggle('is-active', active);
       tile.classList.toggle('is-down', !!state && !active);
-      tile.querySelector('.tile__badge').textContent =
-        active ? 'Läuft' : state === 'unavailable' ? 'nicht verfügbar' : state === 'offline' ? 'offline' : '';
+      let badge = active ? 'Läuft' : state === 'unavailable' ? 'nicht verfügbar' : state === 'offline' ? 'offline' : '';
+      if (DEBUG && state && reasons[stream.id]) badge += ' · ' + reasons[stream.id];
+      tile.querySelector('.tile__badge').textContent = badge;
       tile.querySelector('.tile__meta').textContent = metaText(stream);
     });
   }
@@ -724,6 +739,7 @@
     get player() { return player; },
     get current() { return current; },
     status,
+    reasons,
   };
 
   layout();

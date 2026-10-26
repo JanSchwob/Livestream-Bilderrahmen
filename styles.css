@@ -1,0 +1,427 @@
+:root {
+  color-scheme: dark;
+  --fg: #fff;
+  --fg-dim: rgba(255, 255, 255, 0.68);
+  --fg-faint: rgba(255, 255, 255, 0.4);
+  --glass: rgba(255, 255, 255, 0.13);
+  --glass-strong: rgba(255, 255, 255, 0.24);
+  --pad: clamp(16px, 2.6vw, 44px);
+  --tile-w: clamp(168px, 16vw, 300px);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  color: var(--fg);
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  position: fixed;
+  inset: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ---------- Player (Cover-Verhalten, Grösse setzt app.js) ---------- */
+
+#stage {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+#frame {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;
+}
+
+#curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.7s ease;
+}
+
+#curtain.is-visible {
+  opacity: 1;
+  transition-duration: 0.3s;
+}
+
+/* Weichgezeichnetes Live-Vorschaubild, solange YouTube lädt und seine UI einblendet */
+#curtain img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(18px) brightness(0.75);
+  transform: scale(1.12);
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+#curtain img.is-loaded {
+  opacity: 1;
+}
+
+/* Fängt alle Taps ab, damit das IFrame nie Touches bekommt */
+#tap {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+}
+
+/* ---------- Dezente Hinweise (auch ohne Overlay sichtbar) ---------- */
+
+.notice {
+  position: fixed;
+  z-index: 3;
+  left: calc(var(--pad) + var(--safe-l));
+  bottom: calc(var(--pad) + var(--safe-b));
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: var(--fg-dim);
+  background: rgba(0, 0, 0, 0.42);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.notice[hidden] {
+  display: none;
+}
+
+body.overlay-open .notice {
+  opacity: 0;
+}
+
+/* ---------- Overlay ---------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+
+.overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease, visibility 0s;
+}
+
+.overlay.is-open .sound,
+.overlay.is-open .tiles {
+  pointer-events: auto;
+}
+
+.overlay__top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding:
+    calc(var(--pad) + var(--safe-t))
+    calc(var(--pad) + var(--safe-r))
+    calc(var(--pad) * 3)
+    calc(var(--pad) + var(--safe-l));
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3) 55%, transparent);
+}
+
+.overlay__bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding-top: calc(var(--pad) * 3);
+  padding-bottom: calc(var(--pad) + var(--safe-b));
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.34) 60%, transparent);
+}
+
+.now {
+  min-width: 0;
+  padding-top: 4px;
+}
+
+.now__name {
+  font-size: clamp(20px, 2.2vw, 34px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.35);
+}
+
+.now__meta {
+  margin-top: 4px;
+  font-size: clamp(14px, 1.3vw, 20px);
+  color: var(--fg-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Ton ---------- */
+
+.sound {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.sound__hint {
+  font-size: clamp(13px, 1.1vw, 16px);
+  color: var(--fg-dim);
+}
+
+.sound__hint[hidden] {
+  display: none;
+}
+
+.sound__btn {
+  width: clamp(56px, 4.6vw, 76px);
+  height: clamp(56px, 4.6vw, 76px);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--fg);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.sound__btn:active {
+  transform: scale(0.94);
+  background: var(--glass-strong);
+}
+
+.sound__btn svg {
+  width: 46%;
+  height: 46%;
+}
+
+.sound__btn .icon-on,
+.sound__btn.is-on .icon-off {
+  display: none;
+}
+
+.sound__btn.is-on .icon-on {
+  display: block;
+}
+
+.sound__volume {
+  -webkit-appearance: none;
+  appearance: none;
+  width: clamp(120px, 13vw, 220px);
+  height: 56px;
+  margin: 0;
+  background: transparent;
+  touch-action: pan-x;
+}
+
+.sound__volume[hidden] {
+  display: none;
+}
+
+.sound__volume::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.sound__volume::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.sound__volume::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  margin-top: -10px;
+  border-radius: 50%;
+  background: #fff;
+  border: 0;
+}
+
+.sound__volume::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  border: 0;
+}
+
+.sound__volume:disabled {
+  opacity: 0.35;
+}
+
+/* ---------- Kachelreihe ---------- */
+
+.tiles {
+  display: flex;
+  gap: clamp(12px, 1.4vw, 24px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 6px calc(var(--pad) + var(--safe-r)) 6px calc(var(--pad) + var(--safe-l));
+  scroll-snap-type: x proximity;
+  scroll-padding: 0 calc(var(--pad) + var(--safe-r)) 0 calc(var(--pad) + var(--safe-l));
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+}
+
+.tiles::-webkit-scrollbar {
+  display: none;
+}
+
+.tile {
+  flex: 0 0 var(--tile-w);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  scroll-snap-align: start;
+}
+
+.tile__thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #111;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.tile:active .tile__thumb {
+  transform: scale(0.97);
+}
+
+.tile__thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.3s ease;
+}
+
+.tile.is-active .tile__thumb {
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.tile__badge {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.tile.is-active .tile__badge,
+.tile.is-down .tile__badge {
+  display: inline-flex;
+}
+
+.tile.is-active .tile__badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.tile__name {
+  margin-top: 10px;
+  font-size: clamp(14px, 1.15vw, 18px);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tile__meta {
+  margin-top: 2px;
+  font-size: clamp(12px, 1vw, 15px);
+  color: var(--fg-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tile.is-down img {
+  filter: grayscale(1) brightness(0.5);
+}
+
+.tile.is-down .tile__name,
+.tile.is-down .tile__meta {
+  color: var(--fg-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .overlay.is-open,
+  #curtain,
+  #curtain.is-visible {
+    transition-duration: 0.01s;
+  }
+}

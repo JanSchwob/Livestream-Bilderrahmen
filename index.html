@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#000000">
+  <meta name="color-scheme" content="dark">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Fenster">
+  <meta name="format-detection" content="telephone=no">
+  <title>Fenster</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="stage"><div id="frame"><div id="player"></div></div></div>
+  <div id="curtain" class="is-visible"><img id="curtainImg" alt="" draggable="false"></div>
+  <div id="tap"></div>
+  <div id="notice" class="notice" hidden></div>
+
+  <div id="overlay" class="overlay" aria-hidden="true">
+    <div class="overlay__top">
+      <div class="now">
+        <div class="now__name" id="nowName"></div>
+        <div class="now__meta" id="nowMeta"></div>
+      </div>
+      <div class="sound">
+        <span class="sound__hint" id="soundHint" hidden>Tippen für Ton</span>
+        <input id="volume" class="sound__volume" type="range" min="0" max="100" step="1" aria-label="Lautstärke">
+        <button id="soundBtn" class="sound__btn" type="button" aria-label="Ton einschalten">
+          <svg class="icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/>
+            <path d="M16 9.5l5 5M21 9.5l-5 5"/>
+          </svg>
+          <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/>
+            <path d="M15.5 9a4.2 4.2 0 0 1 0 6"/>
+            <path d="M18.2 6.5a8 8 0 0 1 0 11"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="overlay__bottom">
+      <div class="tiles" id="tiles" role="list"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -102,6 +102,15 @@ body {
   z-index: 2;
 }
 
+/* Ausnahme: Autoplay blockiert – der nächste Tap muss im Player landen */
+body.needs-start #tap {
+  pointer-events: none;
+}
+
+body.needs-start #frame iframe {
+  pointer-events: auto;
+}
+
 /* ---------- Dezente Hinweise (auch ohne Overlay sichtbar) ---------- */
 
 .notice {

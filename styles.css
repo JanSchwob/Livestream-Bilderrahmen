@@ -102,13 +102,37 @@ body {
   z-index: 2;
 }
 
-/* Ausnahme: Autoplay blockiert – der nächste Tap muss im Player landen */
+/* Ausnahme: Autoplay blockiert – der Tap muss im Player landen. Der Vorhang
+   verschwindet, damit YouTubes Startknopf sichtbar ist; nur der untere Streifen
+   öffnet weiterhin das Overlay. */
 body.needs-start #tap {
-  pointer-events: none;
+  top: auto;
+  height: 22%;
 }
 
 body.needs-start #frame iframe {
   pointer-events: auto;
+}
+
+body.needs-start #curtain {
+  opacity: 0;
+}
+
+/* Nur mit ?debug=1 */
+.debuglog {
+  position: fixed;
+  z-index: 5;
+  top: calc(8px + var(--safe-t));
+  left: calc(8px + var(--safe-l));
+  max-width: 60vw;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font: 11px/1.4 ui-monospace, Menlo, monospace;
+  color: #9f9;
+  background: rgba(0, 0, 0, 0.6);
+  white-space: pre-wrap;
+  pointer-events: none;
 }
 
 /* ---------- Dezente Hinweise (auch ohne Overlay sichtbar) ---------- */

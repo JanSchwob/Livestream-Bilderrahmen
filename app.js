@@ -203,6 +203,7 @@
 
   function onPlayerReady() {
     playerReady = true;
+    log('bereit');
     const iframe = player.getIframe && player.getIframe();
     if (iframe) iframe.setAttribute('tabindex', '-1');
     player.mute();
@@ -212,6 +213,7 @@
 
   function onPlayerStateChange(e) {
     const S = YT.PlayerState;
+    log('Status ' + e.data);
     if (e.data === S.PLAYING) onPlaying();
     else if (e.data === S.ENDED) failCurrent('offline', 'beendet');
   }
@@ -219,6 +221,7 @@
   function onPlayerError(e) {
     const kind = ERRORS_UNAVAILABLE.includes(e.data) ? 'unavailable' : 'offline';
     console.warn('YouTube-Fehler', e.data, current && current.id);
+    log('Fehler ' + e.data);
     failCurrent(kind, 'Fehler ' + e.data);
   }
 
@@ -256,6 +259,7 @@
     awaitingPlay = !opts.reload;
     updateNow();
     updateTiles();
+    log(opts.reload ? 'neu laden' : 'starten');
 
     const curtainWasVisible = els.curtain.classList.contains('is-visible');
     showCurtain();
@@ -289,16 +293,35 @@
       // Kein Fehler, aber nie gestartet: Der Browser blockiert Autoplay (z. B. iPad im
       // Stromsparmodus). Der Stream ist in Ordnung – kein Failover, sondern Tap abwarten.
       console.warn('Autoplay blockiert, Status', st, current && current.id);
+      log('kein Start nach 20 s, Status ' + st);
       setNeedsStart(true);
     }, LOAD_TIMEOUT);
   }
 
   // Safari startet Videos im Stromsparmodus nur, wenn der Tap direkt im Player landet.
-  // Deshalb lassen wir in diesem Zustand Taps ausnahmsweise zum IFrame durch.
+  // Deshalb wird in diesem Zustand der Vorhang entfernt (YouTubes Startknopf bzw.
+  // Meldung ist sichtbar) und Taps gehen zum IFrame – ausser im unteren Streifen,
+  // der weiterhin das Overlay öffnet.
   function setNeedsStart(on) {
+    const was = document.body.classList.contains('needs-start');
     document.body.classList.toggle('needs-start', on);
-    if (on) closeOverlay();
-    setNotice('start', on ? 'Tippen zum Starten' : null);
+    if (on && !was) closeOverlay();
+    setNotice('start', on ? 'Auf das Video tippen zum Starten' : null);
+  }
+
+  const logLines = [];
+  const logEl = DEBUG ? document.createElement('pre') : null;
+  if (logEl) {
+    logEl.className = 'debuglog';
+    document.body.appendChild(logEl);
+  }
+
+  function log(msg) {
+    if (!logEl) return;
+    const t = new Date().toTimeString().slice(0, 8);
+    logLines.push(t + ' ' + (current ? current.id + ': ' : '') + msg);
+    if (logLines.length > 14) logLines.shift();
+    logEl.textContent = logLines.join('\n');
   }
 
   function failCurrent(kind, reason) {
@@ -687,6 +710,9 @@
   function preventDefault(e) { e.preventDefault(); }
 
   els.tap.addEventListener('click', () => {
+    if (document.body.classList.contains('needs-start') && playerReady) {
+      try { player.playVideo(); } catch (e) { /* ignorieren */ }
+    }
     if (overlayOpen) closeOverlay();
     else openOverlay();
   });

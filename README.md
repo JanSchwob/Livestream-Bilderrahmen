@@ -57,7 +57,7 @@ Für die Fehlersuche gibt es in der Browser-Konsole das Objekt `fenster` (z. B. 
 3. Im Repository unter **Settings → Pages** als Quelle **Deploy from a branch**, Branch `main`, Ordner `/ (root)` wählen und speichern.
 4. Nach ein bis zwei Minuten läuft die App unter `https://<benutzername>.github.io/fenster/`.
 
-Code-Änderungen sind nach dem Push innerhalb weniger Minuten live. Damit Safari keine alten Dateien aus dem Cache nimmt, hängt `index.html` eine Versionsnummer an `styles.css` und `app.js` (`?v=5`). Diese Nummer bei jeder Änderung erhöhen.
+Code-Änderungen sind nach dem Push innerhalb weniger Minuten live. Damit Safari keine alten Dateien aus dem Cache nimmt, hängt `index.html` eine Versionsnummer an `styles.css` und `app.js` (`?v=6`). Diese Nummer bei jeder Änderung erhöhen.
 
 ## Einrichtung iPad
 

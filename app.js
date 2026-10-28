@@ -350,12 +350,36 @@
         player.loadVideoById(stream.id);
         applySound();
       }
-      if (awaitingPlay) armLoadTimeout(token);
+      if (awaitingPlay) {
+        armLoadTimeout(token);
+        watchProgress(token);
+      }
     };
 
     // Kurzes Überblenden beim Wechsel
     if (curtainWasVisible || !changed) load();
     else setTimeout(load, SWITCH_FADE);
+  }
+
+  // YouTube meldet den Status PLAYING nicht immer (beobachtet auf github.io: Video läuft,
+  // Status bleibt -1). Deshalb gilt auch fortschreitende Wiedergabezeit als Start.
+  function watchProgress(token) {
+    let base = null;
+    const tick = () => {
+      if (token !== loadToken || !awaitingPlay) return;
+      if (playerReady) {
+        const t = safeCurrentTime();
+        // Nach einem Wechsel kann noch kurz die Zeit des vorigen Streams anliegen
+        if (base === null || t < base) base = t;
+        else if (t > base + 0.5 && safeState() !== YT.PlayerState.PAUSED) {
+          log('läuft (Zeit ' + t.toFixed(1) + ')');
+          onPlaying();
+          return;
+        }
+      }
+      setTimeout(tick, 1000);
+    };
+    setTimeout(tick, 1000);
   }
 
   function armLoadTimeout(token) {
@@ -364,7 +388,7 @@
       if (token !== loadToken || !awaitingPlay) return;
       if (!navigator.onLine) return; // das online-Event lädt neu
       const st = playerReady ? safeState() : -1;
-      if (st === YT.PlayerState.BUFFERING) {
+      if (st === YT.PlayerState.BUFFERING || (playerReady && safeCurrentTime() > 0 && st !== YT.PlayerState.PAUSED)) {
         failCurrent('offline', 'Zeitüberschreitung');
         return;
       }
@@ -464,7 +488,7 @@
     const t = safeCurrentTime();
     const progressing = t > lastTime;
     lastTime = t;
-    if (st === YT.PlayerState.PLAYING && progressing) {
+    if (progressing && st !== YT.PlayerState.PAUSED) {
       stallTicks = 0;
       reloads = 0;
       return;

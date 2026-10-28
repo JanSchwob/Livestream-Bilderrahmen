@@ -127,6 +127,7 @@
   let wakeLock = null;
   let scale = 1;
   let rotateKey = '';
+  let adRunning = false;     // Start über die Wiedergabezeit erkannt, meist Werbung
   const notices = { offline: null, failed: null, start: null, info: null };
   let infoTimer = 0;
 
@@ -292,7 +293,14 @@
   function onPlayerStateChange(e) {
     const S = YT.PlayerState;
     log('Status ' + e.data);
-    if (e.data === S.PLAYING) onPlaying();
+    if (e.data === S.PLAYING) {
+      // Nach der Werbung blendet YouTube Titel und Bedienelemente ein – kurz abdecken.
+      if (adRunning) {
+        adRunning = false;
+        showCurtain();
+      }
+      onPlaying();
+    }
     else if (e.data === S.ENDED) failCurrent('offline', 'beendet');
   }
 
@@ -333,6 +341,7 @@
     current = stream;
     const token = ++loadToken;
     stallTicks = 0;
+    adRunning = false;
     if (!opts.reload) reloads = 0;
     awaitingPlay = !opts.reload;
     renderCurrent();
@@ -372,7 +381,8 @@
         // Nach einem Wechsel kann noch kurz die Zeit des vorigen Streams anliegen
         if (base === null || t < base) base = t;
         else if (t > base + 0.5 && safeState() !== YT.PlayerState.PAUSED) {
-          log('läuft (Zeit ' + t.toFixed(1) + ')');
+          log('läuft ohne Status, vermutlich Werbung');
+          adRunning = true;
           onPlaying();
           return;
         }

@@ -57,7 +57,7 @@ Für die Fehlersuche gibt es in der Browser-Konsole das Objekt `fenster` (z. B. 
 3. Im Repository unter **Settings → Pages** als Quelle **Deploy from a branch**, Branch `main`, Ordner `/ (root)` wählen und speichern.
 4. Nach ein bis zwei Minuten läuft die App unter `https://<benutzername>.github.io/fenster/`.
 
-Code-Änderungen sind nach dem Push innerhalb weniger Minuten live. Damit Safari keine alten Dateien aus dem Cache nimmt, hängt `index.html` eine Versionsnummer an `styles.css` und `app.js` (`?v=6`). Diese Nummer bei jeder Änderung erhöhen.
+Code-Änderungen sind nach dem Push innerhalb weniger Minuten live. Damit Safari keine alten Dateien aus dem Cache nimmt, hängt `index.html` eine Versionsnummer an `styles.css` und `app.js` (`?v=7`). Diese Nummer bei jeder Änderung erhöhen.
 
 ## Einrichtung iPad
 
@@ -135,6 +135,7 @@ So prüft man vorher, ob ein Stream einbettbar ist: `https://www.youtube.com/emb
 - **Täglicher Reload** um 04:00 Uhr Gerätezeit gegen Speicherlecks. Er findet nur statt, wenn die Seite erreichbar ist, damit nie eine Fehlerseite stehen bleibt.
 - **Wake Lock** hält den Bildschirm an, wo der Browser es unterstützt (Chrome, Safari ab iPadOS 16.4).
 - Beim Laden und Wechseln zeigt die App das weichgezeichnete Live-Vorschaubild, bis YouTube seine kurz eingeblendeten Titel und Bedienelemente wieder ausgeblendet hat.
+- **Werbung:** Auf der veröffentlichten Seite spielt YouTube vor manchen Streams Werbung ab (lokal über `localhost` meist nicht). Während der Werbung meldet der Player keinen Wiedergabestatus. Die App erkennt den Start deshalb auch an der fortschreitenden Wiedergabezeit und zeigt die Werbung, wie es die YouTube-Nutzungsbedingungen verlangen. Danach übernimmt der Livestream automatisch. Ohne diese Erkennung blieb der Vorhang zu, und die App hielt den Stream für offline – das war die Ursache für „alle offline“ auf dem iPad.
 
 ### Kanal-Fallback: nicht umgesetzt
 

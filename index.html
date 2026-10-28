@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#1a1410">
   <meta name="color-scheme" content="dark">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,41 +15,124 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@300;400&family=JetBrains+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body>
-  <div id="stage"><div id="frame"><div id="player"></div></div></div>
-  <div id="curtain" class="is-visible"><img id="curtainImg" alt="" draggable="false"></div>
+  <!-- Live: Passepartout + Stream -->
+  <div id="stage">
+    <div id="win">
+      <div id="frame"><div id="player"></div></div>
+      <div id="curtain" class="is-visible"><img id="curtainImg" alt="" draggable="false"></div>
+      <div id="night"></div>
+    </div>
+  </div>
   <div id="tap"></div>
-  <div id="notice" class="notice" hidden></div>
 
-  <div id="overlay" class="overlay" aria-hidden="true">
-    <div class="overlay__top">
-      <div class="now">
-        <div class="now__name" id="nowName"></div>
-        <div class="now__meta" id="nowMeta"></div>
+  <div id="ui">
+    <!-- Overlay über dem Stream -->
+    <div id="overlay" class="overlay" aria-hidden="true">
+      <div class="vignette"></div>
+
+      <div class="favbar glass" id="favbar">
+        <div class="favbar__star">★</div>
+        <div class="favbar__list" id="favList"></div>
       </div>
-      <div class="sound">
-        <span class="sound__hint" id="soundHint" hidden>Tippen für Ton</span>
-        <input id="volume" class="sound__volume" type="range" min="0" max="100" step="1" aria-label="Lautstärke">
-        <button id="soundBtn" class="sound__btn" type="button" aria-label="Ton einschalten">
-          <svg class="icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/>
-            <path d="M16 9.5l5 5M21 9.5l-5 5"/>
-          </svg>
-          <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/>
-            <path d="M15.5 9a4.2 4.2 0 0 1 0 6"/>
-            <path d="M18.2 6.5a8 8 0 0 1 0 11"/>
+
+      <div class="plaque glass">
+        <button class="round-btn" id="menuBtn" type="button" aria-label="Meine Fenster">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="4" width="6.5" height="6.5" rx="1.2"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.2"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.2"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.2"/></svg>
+        </button>
+        <div class="plaque__text">
+          <div class="plaque__title" id="curTitle"></div>
+          <div class="plaque__loc"><span class="dot"></span><span id="curLoc"></span></div>
+        </div>
+        <button class="round-btn" id="soundBtn" type="button" aria-label="Ton einschalten">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="3,9 7,9 12,5 12,19 7,15 3,15" fill="currentColor"/>
+            <g class="icon-off"><line x1="16" y1="9" x2="22" y2="15"/><line x1="22" y1="9" x2="16" y2="15"/></g>
+            <g class="icon-on"><path d="M16 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></g>
           </svg>
         </button>
       </div>
     </div>
-    <div class="overlay__bottom">
-      <div class="tiles" id="tiles" role="list"></div>
-    </div>
+
+    <!-- Hinweis im Stil des Bildschilds (auch ohne Overlay sichtbar) -->
+    <div class="notice glass" id="notice" hidden></div>
+
+    <!-- Meine Fenster -->
+    <section class="screen" id="screen-menu" hidden>
+      <header class="head">
+        <button class="text-btn" type="button" data-go="live">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15,5 8,12 15,19"/></svg>Zurück
+        </button>
+        <div class="head__center">
+          <div class="head__title">Meine Fenster</div>
+          <div class="label" id="countLabel"></div>
+        </div>
+        <div class="head__right">
+          <button class="text-btn text-btn--accent" type="button" data-go="search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Neues Fenster
+          </button>
+          <button class="gear-btn" type="button" data-go="settings" aria-label="Einstellungen">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="butt"><circle cx="12" cy="12" r="8.2" stroke-width="3" stroke-dasharray="3.2 3.24"/><circle cx="12" cy="12" r="5.6" stroke-width="1.8"/><circle cx="12" cy="12" r="2" stroke-width="1.6"/></svg>
+          </button>
+        </div>
+      </header>
+      <nav class="tabs">
+        <button class="tab is-active" type="button" data-filter="all">Alle Orte</button>
+        <button class="tab" type="button" data-filter="fav">Favoriten</button>
+      </nav>
+      <div class="scroll menu-scroll">
+        <div class="grid" id="grid"></div>
+        <div class="empty" id="emptyFav" hidden>Noch keine Favoriten. Markiere einen Ort mit dem Stern.</div>
+      </div>
+    </section>
+
+    <!-- Neues Fenster von YouTube -->
+    <section class="screen" id="screen-search" hidden>
+      <header class="head">
+        <button class="text-btn" type="button" data-go="menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15,5 8,12 15,19"/></svg>Meine Fenster
+        </button>
+        <div class="label">Neues Fenster von YouTube</div>
+        <div></div>
+      </header>
+      <div class="search">
+        <label class="search__field">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(241,231,216,.6)" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><line x1="16" y1="16" x2="21" y2="21"/></svg>
+          <input id="q" type="text" placeholder="Wohin möchtest du schauen?" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+        </label>
+      </div>
+      <div class="label result-label" id="resultLabel"></div>
+      <div class="scroll search-scroll">
+        <div class="results" id="results"></div>
+      </div>
+    </section>
+
+    <!-- Einstellungen -->
+    <section class="screen" id="screen-settings" hidden>
+      <header class="head">
+        <button class="text-btn" type="button" data-go="menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15,5 8,12 15,19"/></svg>Meine Fenster
+        </button>
+        <div class="head__title">Einstellungen</div>
+        <div></div>
+      </header>
+      <div class="settings">
+        <div class="preview-col">
+          <div class="preview" id="preview">
+            <div class="preview__win" id="previewWin"><img id="previewImg" alt=""></div>
+          </div>
+          <div class="preview__caption" id="previewCaption"></div>
+        </div>
+        <div class="scroll settings-list" id="settingsList"></div>
+      </div>
+    </section>
   </div>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

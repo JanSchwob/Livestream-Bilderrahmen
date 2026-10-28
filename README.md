@@ -1,24 +1,37 @@
 # Fenster – Livestream-Bilderrahmen
 
-Schlanke Web-App, die 24/7 auf einem Tablet im Bilderrahmen läuft und einen YouTube-Livestream randlos im Vollbild zeigt. Ein Tap blendet die Bedienung ein: Streams wechseln, Ton ein/aus, Lautstärke.
+Schlanke Web-App, die 24/7 auf einem Tablet im Holzbilderrahmen läuft und einen YouTube-Livestream wie ein Fenster in eine andere Welt zeigt, auf Wunsch mit Passepartout. Umgesetzt nach dem Design-Handoff „Variante 1b – Wohnlich“ (Bildschild wie im Museum, Galerie-Menü mit Passepartout).
 
 Läuft auf iPad (Safari, Home-Bildschirm) und Android (Chrome als installierte App oder Fully Kiosk Browser). Reines HTML/CSS/JavaScript, kein Build-Schritt, kein Backend.
 
 | Datei | Inhalt |
 |---|---|
 | `index.html` | Seitengerüst |
-| `styles.css` | Gestaltung (dunkel, Systemschrift, skaliert mit der Bildschirmgrösse) |
-| `app.js` | Player, Overlay, Ton, Fehlerbehandlung, Wake Lock, täglicher Reload |
-| `streams.json` | Liste der Livestreams – nur hier werden Streams gepflegt |
+| `styles.css` | Gestaltung nach Design-Tokens (Spectral, Salbei-Akzent, Glas-Elemente). Alle Masse beziehen sich auf das Referenz-Artboard 1194 × 834 und werden auf das Gerät skaliert |
+| `app.js` | Player, Overlay, Menü, YouTube-Suche, Einstellungen, Fehlerbehandlung, Wake Lock, täglicher Reload |
+| `streams.json` | Startliste der Livestreams beim allerersten Start |
 | `manifest.webmanifest`, `icons/` | Home-Bildschirm-App (PWA) |
 
 ## Bedienung
 
-- **Ruhezustand:** Stream randlos, ohne YouTube-Bedienelemente. Startet immer stumm.
-- **Tap irgendwo:** Overlay blendet ein. Oben links Name und Ortszeit, oben rechts der Ton-Schalter (auf Android zusätzlich ein Lautstärkeregler), unten die Kachelreihe aller Streams.
-- Das Overlay schliesst nach 6 Sekunden ohne Bedienung, oder sofort mit einem Tap neben die Bedienelemente.
-- **Kachel antippen:** wechselt den Stream ohne Neuladen der Seite. Der Tonzustand bleibt erhalten.
-- Gewählter Stream, Ton an/aus und Lautstärke werden gespeichert und nach einem Neustart wiederhergestellt. Der Ton kommt erst mit dem ersten Tap zurück, weil Browser Autoplay nur stumm erlauben. Verweigert der Browser den Ton, erscheint im Overlay „Tippen für Ton“.
+- **Live:** Standardmässig ist nur der Stream sichtbar, im Passepartout oder randlos. Er startet stumm, ausser „Ton beim Start“ steht auf „Mit Ton“ (dann kommt der Ton mit dem ersten Tap, weil Browser Autoplay nur stumm erlauben).
+- **Tippen:** blendet das Overlay ein: rechts die Favoriten-Leiste, unten mittig das Bildschild mit Menü-Knopf, Titel, Ort und Ton-Knopf. Es verschwindet nach der eingestellten Zeit (Standard 5 s) oder sofort mit einem weiteren Tipp.
+- **Meine Fenster** (Menü-Knopf links im Bildschild): alle Orte als Kacheln mit Passepartout. Kachel antippen öffnet den Stream, der Stern schaltet den Favoriten um. Oben rechts „Neues Fenster“ (YouTube-Suche) und das Zahnrad für die Einstellungen.
+- **Neues Fenster:** Livestreams auf YouTube suchen und mit „+“ hinzufügen. Ohne API-Schlüssel kann man einen YouTube-Link (oder eine Video-ID) ins Suchfeld einfügen.
+- **Einstellungen:** Passepartout an/aus, Farbe (Creme, Weiss, Anthrazit), Breite (schmal, mittel, breit), nachts abdunkeln (22–7 Uhr), Steuerung ausblenden nach (5 s, 10 s, 30 s, nie), Ton beim Start, Favoriten wechseln (aus, stündlich, täglich), YouTube-API-Schlüssel, Startliste wiederherstellen. Links eine Live-Vorschau mit Passepartout.
+- Orte, Favoriten, Einstellungen und der zuletzt gesehene Stream werden auf dem Gerät gespeichert (localStorage) und nach einem Neustart fortgesetzt.
+
+### YouTube-Suche und API-Schlüssel
+
+Die Suche nutzt die YouTube Data API v3 (`search.list` mit `eventType=live`, Zuschauerzahl über `videos.list`). Dafür braucht es einen kostenlosen API-Schlüssel:
+
+1. In der [Google Cloud Console](https://console.cloud.google.com/) ein Projekt anlegen.
+2. Unter **APIs & Dienste → Bibliothek** die **YouTube Data API v3** aktivieren.
+3. Unter **APIs & Dienste → Anmeldedaten → Anmeldedaten erstellen → API-Schlüssel** einen Schlüssel erzeugen.
+4. Den Schlüssel einschränken: **Websites** mit `https://janschwob.github.io/*` und **API-Einschränkung** nur auf die YouTube Data API v3.
+5. Den Schlüssel in der App unter **Einstellungen → YouTube → API-Schlüssel** eintragen.
+
+Der Schlüssel liegt nur auf dem Tablet und nicht im Repository. Das Design-Handoff empfiehlt einen kleinen Server-Proxy; weil GitHub Pages keinen Server hat, ersetzt die Website-Einschränkung aus Schritt 4 diesen Schutz. Eine Suche kostet 101 Einheiten des Tageskontingents von 10 000, also rund 99 Suchen pro Tag.
 
 ## Lokal testen
 
@@ -33,7 +46,7 @@ Dann im Browser `http://localhost:8000` öffnen.
 
 Auf einem Tablet im selben WLAN geht auch `http://<IP-des-Macs>:8000`. Wake Lock und die Installation als App funktionieren aber nur über HTTPS, also erst nach dem Deployment.
 
-Mit `?debug=1` an der Adresse (z. B. `https://<benutzername>.github.io/fenster/?debug=1`) zeigen die Kacheln zusätzlich den Fehlergrund an, etwa „offline · Fehler 5“ oder „nicht verfügbar · Fehler 150“. Das hilft vor allem auf dem iPad, wo es keine Konsole gibt.
+Mit `?debug=1` an der Adresse (z. B. `https://janschwob.github.io/Livestream-Bilderrahmen/?debug=1`) zeigt die App oben links ein Protokoll der Player-Ereignisse (Status, Fehlercodes). Das hilft vor allem auf dem iPad, wo es keine Konsole gibt.
 
 Für die Fehlersuche gibt es in der Browser-Konsole das Objekt `fenster` (z. B. `fenster.current`, `fenster.status`, `fenster.player.getPlayerState()`).
 
@@ -44,7 +57,7 @@ Für die Fehlersuche gibt es in der Browser-Konsole das Objekt `fenster` (z. B. 
 3. Im Repository unter **Settings → Pages** als Quelle **Deploy from a branch**, Branch `main`, Ordner `/ (root)` wählen und speichern.
 4. Nach ein bis zwei Minuten läuft die App unter `https://<benutzername>.github.io/fenster/`.
 
-Änderungen an `streams.json` sind nach dem Push innerhalb weniger Minuten live. Die Tablets übernehmen sie spätestens beim täglichen Reload um 04:00 Uhr.
+Code-Änderungen sind nach dem Push innerhalb weniger Minuten live. Damit Safari keine alten Dateien aus dem Cache nimmt, hängt `index.html` eine Versionsnummer an `styles.css` und `app.js` (`?v=5`). Diese Nummer bei jeder Änderung erhöhen.
 
 ## Einrichtung iPad
 
@@ -58,8 +71,8 @@ Für die Fehlersuche gibt es in der Browser-Konsole das Objekt `fenster` (z. B. 
 5. iPad in Querformat einsetzen und am Netzteil lassen. Unter **Einstellungen → Akku → Akkuzustand** „Optimiertes Laden“ eingeschaltet lassen.
 
 Einschränkungen auf dem iPad:
-- Im **Stromsparmodus** startet Safari keine Videos von selbst, auch nicht stumm. Die App zeigt dann „Tippen zum Starten“; ein Tap auf das Bild startet den Stream. Für den Dauerbetrieb den Stromsparmodus ausgeschaltet lassen.
-- iPadOS lässt die Lautstärke nicht per Webseite steuern. Der Lautstärkeregler ist deshalb ausgeblendet; die Lautstärke regelt man mit den Hardwaretasten.
+- Im **Stromsparmodus** startet Safari keine Videos von selbst, auch nicht stumm. Die App zeigt dann „Auf das Bild tippen zum Starten“ und lässt den Tap direkt zum YouTube-Player durch. Der untere Bildstreifen öffnet weiterhin das Overlay. Für den Dauerbetrieb den Stromsparmodus ausgeschaltet lassen.
+- Die Lautstärke regelt man mit den Hardwaretasten.
 - Nach dem täglichen Reload um 04:00 Uhr läuft der Stream weiter, aber stumm, bis jemand einmal tippt (Vorgabe von Safari).
 
 ## Einrichtung Android (Redmi Pad 2, Galaxy Tab A11+)
@@ -89,7 +102,7 @@ Fully Kiosk aus dem Play Store installieren. Einige Funktionen (Kiosk-Modus, Zei
 | Power Settings (optional, Plus) | **Schedule Wakeup / Sleep** | z. B. Bildschirm 23:00–07:00 aus |
 | Web Auto Reload | **Reload on Internet Reconnect** | aus lassen – macht die App selbst |
 
-Der Parameter `?autosound=1` ist für Fully Kiosk gedacht: Ist „Autoplay Videos“ erlaubt, stellt die App den gespeicherten Ton auch nach einem Neustart oder dem nächtlichen Reload ohne Tap wieder her. Lässt der Browser es doch nicht zu, fällt sie automatisch auf stumm zurück und zeigt „Tippen für Ton“. In Chrome und Safari bringt der Parameter nichts.
+Der Parameter `?autosound=1` ist für Fully Kiosk gedacht: Ist „Autoplay Videos“ erlaubt, startet die App auch nach einem Neustart oder dem nächtlichen Reload ohne Tap mit Ton. Lässt der Browser es doch nicht zu, fällt sie automatisch auf stumm zurück. In Chrome und Safari bringt der Parameter nichts.
 
 ### Akku und Stromsparfunktionen
 
@@ -98,37 +111,27 @@ Der Parameter `?autosound=1` ist für Fully Kiosk gedacht: Ist „Autoplay Video
 
 ## Streams hinzufügen oder ändern
 
-Streams stehen ausschliesslich in `streams.json`. Die Reihenfolge der Datei ist die Reihenfolge der Kacheln, der erste Eintrag ist der Standard beim allerersten Start.
+Im Normalfall direkt in der App über **Meine Fenster → Neues Fenster**. `streams.json` enthält nur die Startliste für den allerersten Start und für „Startliste wiederherstellen“; die ersten drei Einträge sind die Standard-Favoriten.
 
 ```json
-{
-  "id": "namib-desert",
-  "name": "Wasserloch Namib-Wüste",
-  "country": "Namibia",
-  "timezone": "Africa/Windhoek",
-  "videoId": "ydYDqZQpim8",
-  "channelId": "UC9X6gGKDv2yhMoofoeS7-Gg"
-}
+{ "id": "ydYDqZQpim8", "title": "Wasserloch in der Namib", "location": "Namib-Naukluft, Namibia" }
 ```
 
 | Feld | Bedeutung |
 |---|---|
-| `id` | eindeutiger Kurzname (Kleinbuchstaben, Bindestriche) |
-| `name` | Anzeigename |
-| `country` | Land, wird neben der Uhrzeit angezeigt |
-| `timezone` | IANA-Zeitzone für die Ortszeit, z. B. `Europe/Rome` ([Liste](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)) |
-| `videoId` | die 11 Zeichen nach `watch?v=` in der YouTube-Adresse |
-| `channelId` | optional, derzeit nur zur Dokumentation (siehe unten) |
+| `id` | YouTube-Video-ID, die 11 Zeichen nach `watch?v=` |
+| `title` | Titel im Bildschild |
+| `location` | Ort, wird in Grossbuchstaben unter dem Titel gezeigt |
 
-So prüft man vorher, ob ein Stream einbettbar ist: `https://www.youtube.com/embed/<videoId>` im Browser öffnen. Erscheint „Video nicht verfügbar“ oder „Wiedergabe auf anderen Websites deaktiviert“, funktioniert er in der App nicht.
+So prüft man vorher, ob ein Stream einbettbar ist: `https://www.youtube.com/embed/<id>` im Browser öffnen. Erscheint „Video nicht verfügbar“ oder „Wiedergabe auf anderen Websites deaktiviert“, funktioniert er in der App nicht.
 
 ## Zuverlässigkeit im Dauerbetrieb
 
-- **Gesperrte oder offline Streams:** YouTube-Fehler 101/150/153 markieren den Stream als „nicht verfügbar“, 2/5/100 sowie ein beendeter Stream als „offline“. Die App wechselt sofort zum nächsten funktionierenden Stream. Startet ein Stream nicht innert 20 s, gilt er ebenfalls als offline.
+- **Gesperrte oder offline Streams:** Bei einem YouTube-Fehler oder einem beendeten Stream erscheint oben „Dieser Ort ist gerade nicht live“, und die App wechselt sofort zum nächsten funktionierenden Ort: erst die Favoriten, dann die übrigen. Bleibt ein Stream länger als 20 s beim Laden hängen, gilt er ebenfalls als offline.
 - **Hänger:** Alle 30 s prüft die App, ob das Video läuft und die Zeit fortschreitet. Nach zwei Fehlschlägen in Folge lädt sie den Stream neu, nach drei erfolglosen Neuladeversuchen wechselt sie zum nächsten.
 - **Rückkehr zum gewählten Stream:** Läuft wegen einer Störung ein Ersatz-Stream, versucht die App stündlich wieder den gewählten Stream.
 - **Alle Streams gestört:** dezenter Hinweis, neuer Versuch alle 2 Minuten.
-- **Netzwerk:** Ohne Internet erscheint unten links „Keine Internetverbindung“; sobald das Netz zurück ist, lädt der Stream neu.
+- **Netzwerk:** Ohne Internet erscheint oben „Keine Internetverbindung“; sobald das Netz zurück ist, lädt der Stream neu.
 - **Täglicher Reload** um 04:00 Uhr Gerätezeit gegen Speicherlecks. Er findet nur statt, wenn die Seite erreichbar ist, damit nie eine Fehlerseite stehen bleibt.
 - **Wake Lock** hält den Bildschirm an, wo der Browser es unterstützt (Chrome, Safari ab iPadOS 16.4).
 - Beim Laden und Wechseln zeigt die App das weichgezeichnete Live-Vorschaubild, bis YouTube seine kurz eingeblendeten Titel und Bedienelemente wieder ausgeblendet hat.
@@ -163,3 +166,14 @@ Ausserdem geprüft:
 - Ein absichtlich kaputter Stream wird als „nicht verfügbar“ markiert, die App wechselt automatisch zum nächsten.
 
 Noch auf echter Hardware zu prüfen: Ton per Tap in iPadOS Safari, Fully Kiosk auf Redmi Pad 2 und Galaxy Tab A11+, 24-Stunden-Dauerlauf. Die Logik dafür ist umgesetzt, auf den Geräten aber nicht getestet.
+
+### Test der Version 1b (28.10.2026)
+
+Lokal in Chromium bei 1194 × 834 (iPad-Referenz) und 1280 × 800 (Android-Tablet) geprüft:
+- Passepartout Creme/Mittel als Standard, Wechsel auf Anthrazit/Breit wirkt sofort auf Stream und Vorschau. Das Video füllt den Ausschnitt ohne schwarze Balken.
+- Overlay mit Vignette, Favoriten-Leiste und Bildschild. Favorit antippen wechselt den Stream, der Ton-Knopf schaltet den Ton ein (Salbei-Hintergrund).
+- „Meine Fenster“ mit 9 Orten und 3 Favoriten, Stern-Umschaltung, Einstellungen mit allen Optionen.
+- Neues Fenster per YouTube-Link: Titel und Kanal kommen über oEmbed, „+“ fügt den Ort hinzu, danach steht „✓“. Gelöschte Videos ergeben „Video nicht gefunden“.
+- Ein absichtlich kaputter Stream zeigt „Dieser Ort ist gerade nicht live“ und wechselt automatisch zum nächsten Ort.
+
+Nicht getestet: die Suche über die YouTube Data API (dafür fehlt ein API-Schlüssel) und die neue Version auf dem iPad.

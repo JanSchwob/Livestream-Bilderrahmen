@@ -1,74 +1,11 @@
 [
-  {
-    "id": "namib-desert",
-    "name": "Wasserloch Namib-Wüste",
-    "country": "Namibia",
-    "timezone": "Africa/Windhoek",
-    "videoId": "ydYDqZQpim8",
-    "channelId": "UC9X6gGKDv2yhMoofoeS7-Gg"
-  },
-  {
-    "id": "etosha-okaukuejo",
-    "name": "Okaukuejo-Wasserloch, Etosha",
-    "country": "Namibia",
-    "timezone": "Africa/Windhoek",
-    "videoId": "AeMUdOPFcXI",
-    "channelId": "UC9X6gGKDv2yhMoofoeS7-Gg"
-  },
-  {
-    "id": "kenya-ol-donyo",
-    "name": "Ol Donyo Lodge, Chyulu Hills",
-    "country": "Kenia",
-    "timezone": "Africa/Nairobi",
-    "videoId": "XsOU8JnEpNM",
-    "channelId": "UCuoNAKa3P0QR1Lw9QdpmoVg"
-  },
-  {
-    "id": "seychelles-beach",
-    "name": "Wilder Strand",
-    "country": "Seychellen",
-    "timezone": "Indian/Mahe",
-    "videoId": "Thtj8Ht7Z_c",
-    "channelId": "UCeDnpWZapyw4rwORykzLbFg"
-  },
-  {
-    "id": "venice-ponte-guglie",
-    "name": "Venedig, Ponte delle Guglie",
-    "country": "Italien",
-    "timezone": "Europe/Rome",
-    "videoId": "mt7uE-n0YPI",
-    "channelId": "UCMpn1qLudF-zb4M4bqxLIbw"
-  },
-  {
-    "id": "venice-dorsoduro",
-    "name": "Venedig, Dorsoduro",
-    "country": "Italien",
-    "timezone": "Europe/Rome",
-    "videoId": "gzgrofStPJ0",
-    "channelId": "UCMpn1qLudF-zb4M4bqxLIbw"
-  },
-  {
-    "id": "koh-phangan-beach",
-    "name": "Strand Koh Phangan",
-    "country": "Thailand",
-    "timezone": "Asia/Bangkok",
-    "videoId": "MW3fisTCXRQ",
-    "channelId": "UCegzBUd6-PYoO_v7gjJgufg"
-  },
-  {
-    "id": "sydney-harbour",
-    "name": "Hafen von Sydney",
-    "country": "Australien",
-    "timezone": "Australia/Sydney",
-    "videoId": "5uZa3-RMFos",
-    "channelId": "UCLav_kTu9PmAEChvGyrPbhQ"
-  },
-  {
-    "id": "dublin-temple-bar",
-    "name": "Dublin, Temple Bar",
-    "country": "Irland",
-    "timezone": "Europe/Dublin",
-    "videoId": "3nyPER2kzqk",
-    "channelId": "UC6qrG3W8SMK0jior2olka3g"
-  }
+  { "id": "ydYDqZQpim8", "title": "Wasserloch in der Namib", "location": "Namib-Naukluft, Namibia" },
+  { "id": "AeMUdOPFcXI", "title": "Okaukuejo-Wasserloch", "location": "Etosha, Namibia" },
+  { "id": "XsOU8JnEpNM", "title": "Ol Donyo Lodge", "location": "Chyulu Hills, Kenia" },
+  { "id": "Thtj8Ht7Z_c", "title": "Wilder Strand", "location": "Seychellen" },
+  { "id": "mt7uE-n0YPI", "title": "Ponte delle Guglie", "location": "Venedig, Italien" },
+  { "id": "gzgrofStPJ0", "title": "Dorsoduro", "location": "Venedig, Italien" },
+  { "id": "MW3fisTCXRQ", "title": "Strand von Koh Phangan", "location": "Koh Phangan, Thailand" },
+  { "id": "5uZa3-RMFos", "title": "Hafen von Sydney", "location": "Sydney, Australien" },
+  { "id": "3nyPER2kzqk", "title": "Temple Bar", "location": "Dublin, Irland" }
 ]
